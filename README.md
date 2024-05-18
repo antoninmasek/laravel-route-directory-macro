@@ -6,7 +6,7 @@
 This package registers `loadFromDirectory` macro on the `Route` facade. Using this macro you can easily load all defined
 routes from multiple files within a directory.
 
-> I also wrote an article about this package https://tonymasek.com/blog/laravel-route-directory-macro
+> I also wrote an [article](https://tonymasek.com/blog/laravel-route-directory-macro) about this package 
 
 ## Installation
 
