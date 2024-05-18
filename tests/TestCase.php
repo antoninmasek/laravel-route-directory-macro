@@ -2,9 +2,9 @@
 
 namespace AntoninMasek\LaravelRouteDirectoryMacro\Tests;
 
+use AntoninMasek\LaravelRouteDirectoryMacro\LaravelRouteDirectoryMacroServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
-use AntoninMasek\LaravelRouteDirectoryMacro\LaravelRouteDirectoryMacroServiceProvider;
 
 class TestCase extends Orchestra
 {
@@ -22,15 +22,5 @@ class TestCase extends Orchestra
         return [
             LaravelRouteDirectoryMacroServiceProvider::class,
         ];
-    }
-
-    public function getEnvironmentSetUp($app)
-    {
-        config()->set('database.default', 'testing');
-
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_laravel-route-directory-macro_table.php.stub';
-        $migration->up();
-        */
     }
 }

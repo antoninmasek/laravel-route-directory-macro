@@ -17,8 +17,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "spatie/laravel-package-tools": "^1.16",
-        "illuminate/contracts": "^10.0||^11.0"
+        "spatie/laravel-package-tools": "^1.16"
     },
     "require-dev": {
         "laravel/pint": "^1.14",
@@ -26,19 +25,16 @@
         "orchestra/testbench": "^9.0.0||^8.22.0",
         "pestphp/pest": "^2.34",
         "pestphp/pest-plugin-arch": "^2.7",
-        "pestphp/pest-plugin-laravel": "^2.3",
-        "spatie/laravel-ray": "^1.35"
+        "pestphp/pest-plugin-laravel": "^2.3"
     },
     "autoload": {
         "psr-4": {
-            "AntoninMasek\\LaravelRouteDirectoryMacro\\": "src/",
-            "AntoninMasek\\LaravelRouteDirectoryMacro\\Database\\Factories\\": "database/factories/"
+            "AntoninMasek\\LaravelRouteDirectoryMacro\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "AntoninMasek\\LaravelRouteDirectoryMacro\\Tests\\": "tests/",
-            "Workbench\\App\\": "workbench/app/"
+            "AntoninMasek\\LaravelRouteDirectoryMacro\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -70,10 +66,7 @@
         "laravel": {
             "providers": [
                 "AntoninMasek\\LaravelRouteDirectoryMacro\\LaravelRouteDirectoryMacroServiceProvider"
-            ],
-            "aliases": {
-                "LaravelRouteDirectoryMacro": "AntoninMasek\\LaravelRouteDirectoryMacro\\Facades\\LaravelRouteDirectoryMacro"
-            }
+            ]
         }
     },
     "minimum-stability": "dev",
