@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('secret', fn() => 'secret')->name('secret.index');
+Route::get('secret', fn () => 'secret')->name('secret.index');
