@@ -23,6 +23,10 @@ it('it does not load hidden files', function () {
     expect($secretRoute)->toBeNull('It is loading hidden files, but it should not.');
 });
 
+it('it does not load non php files', function () {
+    expect($this->output())->not()->toContain('This file should not be loaded');
+});
+
 it('it loads routes from directories', function () {
     $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
 
