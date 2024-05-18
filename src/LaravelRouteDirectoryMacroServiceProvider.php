@@ -17,10 +17,16 @@ class LaravelRouteDirectoryMacroServiceProvider extends PackageServiceProvider
 
     public function packageRegistered()
     {
-        Route::macro('loadFromDirectory', function (string $path, array $middleware = [], ?string $prefix = null, ?string $name = null) {
-            $name ??= ! is_null($prefix)
-                ? str($prefix)->replace('/', '.')->append('.')
-                : null;
+        Route::macro('loadFromDirectory', function (string $path, array $middleware = [], ?string $prefix = null, string|bool|null $name = null) {
+            if (! is_null($prefix)) {
+                $prefix = str($prefix)->endsWith('/')
+                    ? str($prefix)->replaceLast('/', '')
+                    : $prefix;
+
+                if ($name !== false) {
+                    $name ??= str($prefix)->replace('/', '.')->append('.');
+                }
+            }
 
             collect(scandir(base_path($path)))
                 ->filter(fn (string $filename) => ! str($filename)->startsWith('.'))
