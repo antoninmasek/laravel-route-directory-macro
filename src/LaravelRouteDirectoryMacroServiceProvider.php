@@ -2,39 +2,43 @@
 
 namespace AntoninMasek\LaravelRouteDirectoryMacro;
 
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use SplFileInfo;
 
 class LaravelRouteDirectoryMacroServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
-        $package
-            ->name('laravel-route-directory-macro')
-            ->hasConfigFile();
+        $package->name('laravel-route-directory-macro');
     }
 
     public function packageRegistered(): void
     {
         Route::macro('loadFromDirectory', function (string $path, array $middleware = [], ?string $prefix = null, string|bool|null $name = null) {
-            if (! is_null($prefix)) {
-                $prefix = str($prefix)->endsWith('/')
-                    ? str($prefix)->replaceLast('/', '')
-                    : $prefix;
-
-                if ($name !== false) {
-                    $name ??= str($prefix)->replace('/', '.')->append('.');
-                }
+            if (! is_null($prefix) && $name !== false) {
+                $name ??= str($prefix)
+                    ->ltrim('/')
+                    ->rtrim('/')
+                    ->replace('/', '.');
             }
 
-            collect(scandir(base_path($path)))
-                ->filter(fn (string $filename) => ! str($filename)->startsWith('.'))
-                ->each(function (string $filename) use ($path, $middleware, $prefix, $name) {
+            if (! is_null($name)) {
+                $name = str($name)->rtrim('.')->append('.');
+            }
+
+            $path = ! str($path)->startsWith('/')
+                ? base_path($path)
+                : $path;
+
+            collect(File::allFiles($path, false))
+                ->each(function (SplFileInfo $fileInfo) use ($middleware, $prefix, $name) {
                     Route::middleware($middleware)
                         ->prefix($prefix)
                         ->name($name)
-                        ->group(base_path("$path/$filename"));
+                        ->group($fileInfo->getRealPath());
                 });
         });
     }

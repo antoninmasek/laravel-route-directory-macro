@@ -102,8 +102,10 @@ public function boot(): void
 ### Path
 
 The only required parameter is the path to the directory with your route files. The macro uses `base_path` helper in the
-background, the path
-is relative to the base path of your project.
+background, the path is relative to the base path of your project.
+
+If you wish to use an absolute path, you have to have `/` at the start of your path string. Then the `base_path` helper
+won't be used.
 
 ### Middleware
 
