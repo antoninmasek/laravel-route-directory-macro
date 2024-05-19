@@ -112,7 +112,7 @@ This is an array, where you can specify which middleware should be applied to ro
 
 ### Prefix
 
-If you specify prefix, then all routes in the directory will be prefixed. Let's look at the following example:
+If you specify a prefix, then all routes in the directory will be prefixed. Let's look at the following example:
 
 ```php
 Route::loadFromDirectory(
@@ -129,13 +129,13 @@ Then all routes would be `/admin/...`
 By default, when you specify a prefix the name will automatically become the prefix with `.` at the end. So for
 prefix `admin` the name would be `admin.`.
 
-If you wish to use your name, just pass it as the forth argument. Or if you wish to just use prefix without any name set
+If you wish to use your name, just pass it as the fourth argument. Or if you wish to just use prefix without any name set
 the name argument to `false`.
 
 ## Notes
 
-The macro is excluding files starting with `.` to prevent hidden files from being loaded. You can also use this to your
-advantage in a scenario, where you have routes file, which you don't want to load yet. You can just prefix it with dot
+The macro excludes files starting with `.` to prevent hidden files from being loaded. You can also use this to your
+advantage in a scenario, where you have routes file, which you don't want to load yet. You can just prefix it with a dot
 and that's it. For example `routes/.secret.php`.
 
 ## Credits
