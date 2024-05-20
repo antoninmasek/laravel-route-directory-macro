@@ -38,10 +38,10 @@ routes/
     └── auth.php
 ```
 
-Now, traditionally we would have to require each file from our `web.php` or any other entry point for your routes. The
-other option is to register each file in your `bootstrap/app.php` (or `RouteServiceProvider` for Laravel 10 and below).
+Now, traditionally we would have to require each file from our `web.php` or any other entry point for our routes. The
+other option is to register each file in the `bootstrap/app.php` (or `RouteServiceProvider` for Laravel 10 and below).
 
-Using this package you can just do the following:
+Using this package we can just do the following:
 
 ```php
 Route::loadFromDirectory(
@@ -61,7 +61,7 @@ from `routes/public` directory and only assigns `web` middleware.
 
 ### Laravel 11.x or later
 
-Use it inside your `bootstrap/app.php`
+Use it inside `bootstrap/app.php`
 
 ```php
 return Application::configure(basePath: dirname(__DIR__))
@@ -80,7 +80,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
 ### Laravel 10.x and below
 
-Use it inside your `RouteServiceProvider.php`
+Use it inside `RouteServiceProvider.php`
 
 ```php
 public function boot(): void
@@ -122,7 +122,7 @@ Route::loadFromDirectory(
 );
 ```
 
-Then all routes would be `/admin/...`
+Then all routes would have `admin/` prefix
 
 ### Name
 
