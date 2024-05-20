@@ -33,7 +33,11 @@ class LaravelRouteDirectoryMacroServiceProvider extends PackageServiceProvider
                 ? base_path($path)
                 : $path;
 
-            collect(File::allFiles($path, false))
+            $files = File::exists($path)
+                ? File::allFiles($path, false)
+                : [];
+
+            collect($files)
                 ->filter(fn (SplFileInfo $file) => $file->getExtension() === 'php')
                 ->each(function (SplFileInfo $fileInfo) use ($middleware, $prefix, $name) {
                     Route::middleware($middleware)

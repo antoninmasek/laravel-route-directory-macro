@@ -1,180 +1,142 @@
 <?php
 
+use AntoninMasek\LaravelRouteDirectoryMacro\Tests\Helpers\RoutesInspector;
+
 beforeEach(function () {
-    $basePath = __DIR__.'/../routes';
+    $this->app->setBasePath(__DIR__.'/..');
+});
 
-    \Illuminate\Support\Facades\Route::loadFromDirectory(
-        "{$basePath}/app",
-        ['web', 'auth'],
-    );
+it('can get route by name', function () {
+    $testRoute = RoutesInspector::getRoute('test');
+    expect($testRoute)->toBeNull();
 
-    \Illuminate\Support\Facades\Route::loadFromDirectory(
-        "{$basePath}/public",
+    Route::get('test', fn () => 'test')->name('test');
+
+    $testRoute = RoutesInspector::getRoute('test');
+    expect($testRoute)->not()->toBeNull(
+        'The RoutesInspector::getRouteByName() does not work'
     );
 });
 
-it('it does not load hidden files', function () {
-    $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
+it('can count registered routes', function () {
+    expect(RoutesInspector::getRoutesCount())->toEqual(0);
 
-    $secretRoute = collect($routes)->first(function (\Illuminate\Routing\Route $route) {
-        return $route->getName() === 'secret.index';
-    });
+    Route::get('test', fn () => 'test')->name('test');
 
-    expect($secretRoute)->toBeNull('It is loading hidden files, but it should not.');
+    expect(RoutesInspector::getRoutesCount())->toEqual(1);
 });
 
-it('it does not load non php files', function () {
+it('can count get route middleware', function () {
+    Route::get('test', fn () => 'test')
+        ->middleware(['web', 'auth'])
+        ->name('test');
+
+    expect(RoutesInspector::getRouteMiddleware('test'))
+        ->toEqual(['web', 'auth']);
+});
+
+it('does not load hidden files', function () {
+    Route::loadFromDirectory('routes/app');
+
+    $secretRoute = RoutesInspector::getRoute('secret.index');
+    expect($secretRoute)->toBeNull('It loaded hidden file');
+});
+
+it('only loads php files', function () {
+    Route::loadFromDirectory('routes/app');
+
     expect($this->output())->not()->toContain('This file should not be loaded');
 });
 
-it('it loads routes from directories', function () {
-    $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
+it('loads routes from directories', function () {
+    Route::loadFromDirectory('routes/app');
 
-    $expectedRouteNames = [
-        'media.index',
-        'users.index',
-        'auth.index',
-    ];
+    expect(RoutesInspector::getRoutesCount())->toEqual(2)
+        ->and(RoutesInspector::getRoute('media.index'))->not()->toBeNull()
+        ->and(RoutesInspector::getRoute('users.index'))->not()->toBeNull()
+        ->and(RoutesInspector::getRoute('auth.index'))->toBeNull();
 
-    $routesCount = collect($routes)
-        ->filter(function (\Illuminate\Routing\Route $route) use ($expectedRouteNames) {
-            return in_array($route->getName(), $expectedRouteNames);
-        })
-        ->count();
-
-    expect($routesCount)->toEqual(
-        count($expectedRouteNames),
-        'It did not load all routes',
-    );
+    Route::loadFromDirectory('routes/public');
+    expect(RoutesInspector::getRoutesCount())->toEqual(3)
+        ->and(RoutesInspector::getRoute('auth.index'))->not()->toBeNull();
 });
 
-it('it assigns middleware', function () {
-    $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
+it('assigns middleware', function () {
+    Route::loadFromDirectory('routes/public');
+    Route::loadFromDirectory('routes/app', [
+        'web', 'auth',
+    ]);
 
-    $expectedRouteNames = ['media.index', 'users.index'];
-    $routesCount = collect($routes)
-        ->filter(function (\Illuminate\Routing\Route $route) use ($expectedRouteNames) {
-            return in_array($route->getName(), $expectedRouteNames);
-        })
-        ->filter(function (\Illuminate\Routing\Route $route) {
-            return $route->action['middleware'] === ['web', 'auth'];
-        })
-        ->count();
-
-    expect($routesCount)->toEqual(
-        count($expectedRouteNames),
-        'It did not assign middleware correctly',
-    );
-
-    $expectedRouteNames = ['auth.index'];
-    $routesCount = collect($routes)
-        ->filter(function (\Illuminate\Routing\Route $route) use ($expectedRouteNames) {
-            return in_array($route->getName(), $expectedRouteNames);
-        })
-        ->filter(function (\Illuminate\Routing\Route $route) {
-            return empty($route->action['middleware']);
-        })
-        ->count();
-
-    expect($routesCount)->toEqual(
-        count($expectedRouteNames),
-        'It did assign middleware incorrectly',
-    );
+    expect(RoutesInspector::getRouteMiddleware('media.index'))
+        ->toEqual(['web', 'auth'])
+        ->and(RoutesInspector::getRouteMiddleware('users.index'))
+        ->toEqual(['web', 'auth'])
+        ->and(RoutesInspector::getRouteMiddleware('auth.index'))
+        ->toBeEmpty();
 });
 
-it('it can use a prefix', function () {
-    $basePath = __DIR__.'/../routes';
+it('can use a prefix', function () {
+    Route::loadFromDirectory('routes/app', prefix: $prefix = 'admin');
 
-    \Illuminate\Support\Facades\Route::loadFromDirectory(
-        "{$basePath}/public",
-        [],
-        'admin',
-    );
-
-    $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
-    $count = collect($routes)
-        ->filter(function (\Illuminate\Routing\Route $route) {
-            return str($route->uri())->startsWith('admin');
-        })
-        ->count();
-
-    expect($count)->toEqual(1);
-});
-
-it('it assigns correct default name with one dot suffix when prefix has one or more trailing slashes', function () {
-    $basePath = __DIR__.'/../routes';
-
-    \Illuminate\Support\Facades\Route::loadFromDirectory(
-        "{$basePath}/public",
-        [],
-        'admin////',
-    );
-
-    $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
-
-    /** @var \Illuminate\Routing\Route $route */
-    $route = collect($routes)->first(function (\Illuminate\Routing\Route $route) {
-        return str($route->uri())->startsWith('admin');
+    RoutesInspector::getRoutes()->each(function (\Illuminate\Routing\Route $route) use ($prefix) {
+        expect($route->uri())->toStartWith($prefix);
     });
-
-    expect($route->getName())->toEqual('admin.auth.index');
 });
 
-it('it can uses the prefix as a default name', function () {
-    $basePath = __DIR__.'/../routes';
+it('uses default name based on prefix', function () {
+    Route::loadFromDirectory('routes/app', prefix: $prefix = 'admin');
 
-    \Illuminate\Support\Facades\Route::loadFromDirectory(
-        "{$basePath}/public",
+    RoutesInspector::getRoutes()->each(function (\Illuminate\Routing\Route $route) use ($prefix) {
+        expect($route->getName())->toStartWith("{$prefix}.");
+    });
+});
+
+it('is possible to overwrite the default name', function () {
+    Route::loadFromDirectory(
+        'routes/app',
         [],
         'admin',
+        $name = 'auth',
     );
 
-    $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
-    $count = collect($routes)
-        ->filter(function (\Illuminate\Routing\Route $route) {
-            return str($route->getName())->startsWith('admin.');
-        })
-        ->count();
-
-    expect($count)->toEqual(1);
+    RoutesInspector::getRoutes()->each(function (\Illuminate\Routing\Route $route) use ($name) {
+        expect($route->getName())->toStartWith("{$name}.");
+    });
 });
 
-it('it is possible to overwrite the name', function () {
-    $basePath = __DIR__.'/../routes';
-
-    \Illuminate\Support\Facades\Route::loadFromDirectory(
-        "{$basePath}/public",
+it('is possible to use prefix without name', function () {
+    Route::loadFromDirectory(
+        'routes/app',
         [],
-        'admin',
-        'overwritten.'
-    );
-
-    $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
-    $count = collect($routes)
-        ->filter(function (\Illuminate\Routing\Route $route) {
-            return str($route->getName())->startsWith('overwritten.');
-        })
-        ->count();
-
-    expect($count)->toEqual(1);
-});
-
-it('it is possible to use prefix without name', function () {
-    $basePath = __DIR__.'/../routes';
-
-    \Illuminate\Support\Facades\Route::loadFromDirectory(
-        "{$basePath}/public",
-        [],
-        'admin',
+        $prefix = 'admin',
         false,
     );
 
-    $routes = \Illuminate\Support\Facades\Route::getRoutes()->getRoutes();
-    $count = collect($routes)
-        ->filter(function (\Illuminate\Routing\Route $route) {
-            return str($route->getName())->startsWith('admin.');
-        })
-        ->count();
+    RoutesInspector::getRoutes()->each(function (\Illuminate\Routing\Route $route) use ($prefix) {
+        expect($route->getName())->not()->toStartWith("{$prefix}.");
+    });
+});
 
-    expect($count)->toEqual(0);
+it('normalizes dot suffix in the name when prefix has one or more trailing slashes', function () {
+    $prefix = 'admin';
+    Route::loadFromDirectory('routes/public', prefix: "{$prefix}////");
+
+    RoutesInspector::getRoutes()->each(function (\Illuminate\Routing\Route $route) use ($prefix) {
+        expect($route->getName())->not()->toStartWith("{$prefix}..")
+            ->and($route->getName())->tostartWith("{$prefix}.");
+    });
+
+    expect(RoutesInspector::getRoute('admin.auth.index'))->not()->toBeNull();
+});
+
+it('does not fail when directory does not exist', function () {
+    Route::loadFromDirectory('routes/not-exists');
+})->throwsNoExceptions();
+
+it('can use absolute path', function () {
+    Route::loadFromDirectory('/routes/public');
+    expect(RoutesInspector::getRoutesCount())->toBeEmpty();
+
+    Route::loadFromDirectory('routes/public');
+    expect(RoutesInspector::getRoutesCount())->toEqual(1);
 });
