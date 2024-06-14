@@ -132,11 +132,29 @@ prefix `admin` the name would be `admin.`.
 If you wish to use your name, just pass it as the fourth argument. Or if you wish to just use prefix without any name set
 the name argument to `false`.
 
-## Notes
+## Hidden files
 
-The macro excludes files starting with `.` to prevent hidden files from being loaded. You can also use this to your
+By default, the macro excludes files starting with `.` to prevent hidden files from being loaded. You can also use this to your
 advantage in a scenario, where you have routes file, which you don't want to load yet. You can just prefix it with a dot
 and that's it. For example `routes/.secret.php`.
+
+### Loading hidden files in specific environments
+To take even greater advantage of hidden files, you can specify environments in which you would like them to be loaded. This
+is very useful, when you want to work on new routes in your `local` environment, but not yet in production. 
+
+To do this you should publish the config file and specify the desired environments in the `register_hidden_routes_in_environments` config array. 
+
+```php
+return [
+    /*
+     * List of environments in which hidden routes (route files with `.` prefix) should be registered.
+     *
+     * This is useful for working on new routes in certain environments (usually local), while
+     * ensuring they are not registered in any other environment (usually production).
+     */
+    'register_hidden_routes_in_environments' => [],
+];
+```
 
 ## Credits
 
