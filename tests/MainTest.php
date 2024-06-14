@@ -35,13 +35,6 @@ it('can count get route middleware', function () {
         ->toEqual(['web', 'auth']);
 });
 
-it('does not load hidden files', function () {
-    Route::loadFromDirectory('routes/app');
-
-    $secretRoute = RoutesInspector::getRoute('secret.index');
-    expect($secretRoute)->toBeNull('It loaded hidden file');
-});
-
 it('only loads php files', function () {
     Route::loadFromDirectory('routes/app');
 
@@ -139,4 +132,56 @@ it('can use absolute path', function () {
 
     Route::loadFromDirectory('routes/public');
     expect(RoutesInspector::getRoutesCount())->toEqual(1);
+});
+
+it('does not load hidden files by default', function () {
+    Route::loadFromDirectory('routes/app');
+    config()->set('route-directory-macro.register_hidden_routes_in_environments', null);
+
+    $secretRoute = RoutesInspector::getRoute('secret.index');
+    expect($secretRoute)->toBeNull('It loaded hidden file');
+});
+
+it('does not load hidden files when config value is empty', function () {
+    Route::loadFromDirectory('routes/app');
+
+    $secretRoute = RoutesInspector::getRoute('secret.index');
+    expect($secretRoute)->toBeNull('It loaded hidden file');
+});
+
+it('does not load hidden files when config value does not contain current environment', function () {
+    $currentEnvironment = \Illuminate\Support\Facades\App::environment();
+    config()->set('route-directory-macro.register_hidden_routes_in_environments', [$currentEnvironment.'_test']);
+
+    Route::loadFromDirectory('routes/app');
+
+    $secretRoute = RoutesInspector::getRoute('secret.index');
+    expect($secretRoute)->toBeNull('It loaded hidden file');
+});
+
+it('does load hidden files in specified environment', function () {
+    $currentEnvironment = \Illuminate\Support\Facades\App::environment();
+    config()->set('route-directory-macro.register_hidden_routes_in_environments', [$currentEnvironment]);
+
+    Route::loadFromDirectory('routes/app');
+
+    $secretRoute = RoutesInspector::getRoute('secret.index');
+    expect($secretRoute)->not()->toBeNull(
+        'It did not load hidden file when explicitly allowed via config',
+    );
+});
+
+it('does load hidden files in specified environment even when more environments are specified', function () {
+    $currentEnvironment = \Illuminate\Support\Facades\App::environment();
+    config()->set('route-directory-macro.register_hidden_routes_in_environments', [
+        'local',
+        $currentEnvironment,
+    ]);
+
+    Route::loadFromDirectory('routes/app');
+
+    $secretRoute = RoutesInspector::getRoute('secret.index');
+    expect($secretRoute)->not()->toBeNull(
+        'It did not load hidden file when explicitly allowed via config',
+    );
 });

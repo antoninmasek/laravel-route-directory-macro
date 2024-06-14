@@ -2,6 +2,7 @@
 
 namespace AntoninMasek\LaravelRouteDirectoryMacro;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Spatie\LaravelPackageTools\Package;
@@ -12,7 +13,9 @@ class LaravelRouteDirectoryMacroServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
-        $package->name('laravel-route-directory-macro');
+        $package
+            ->name('laravel-route-directory-macro')
+            ->hasConfigFile();
     }
 
     public function packageRegistered(): void
@@ -33,8 +36,13 @@ class LaravelRouteDirectoryMacroServiceProvider extends PackageServiceProvider
                 ? base_path($path)
                 : $path;
 
+            $allowHiddenFilesInEnvironments = config('route-directory-macro.register_hidden_routes_in_environments');
+            $shouldLoadHiddenFiles = ! empty($allowHiddenFilesInEnvironments)
+                ? App::environment($allowHiddenFilesInEnvironments)
+                : false;
+
             $files = File::exists($path)
-                ? File::allFiles($path, false)
+                ? File::allFiles($path, $shouldLoadHiddenFiles)
                 : [];
 
             collect($files)
