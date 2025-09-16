@@ -105,9 +105,17 @@ it('is possible to use prefix without name', function () {
         false,
     );
 
-    RoutesInspector::getRoutes()->each(function (\Illuminate\Routing\Route $route) use ($prefix) {
-        expect($route->getName())->not()->toStartWith("{$prefix}.");
-    });
+    // Should preserve original user-defined names exactly as they are
+    expect(RoutesInspector::getRoute('media.index'))->not()->toBeNull()
+        ->and(RoutesInspector::getRoute('users.index'))->not()->toBeNull()
+
+        // Should NOT create names with prefix
+        ->and(RoutesInspector::getRoute('admin.media.index'))->toBeNull()
+        ->and(RoutesInspector::getRoute('admin.users.index'))->toBeNull()
+
+        // Should NOT create names with dot prefix (current bug)
+        ->and(RoutesInspector::getRoute('.media.index'))->toBeNull()
+        ->and(RoutesInspector::getRoute('.users.index'))->toBeNull();
 });
 
 it('normalizes dot suffix in the name when prefix has one or more trailing slashes', function () {

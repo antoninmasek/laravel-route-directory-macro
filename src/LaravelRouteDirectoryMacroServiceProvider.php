@@ -28,7 +28,7 @@ class LaravelRouteDirectoryMacroServiceProvider extends PackageServiceProvider
                     ->replace('/', '.');
             }
 
-            if (! is_null($name)) {
+            if (! is_null($name) && $name !== false) {
                 $name = str($name)->rtrim('.')->append('.');
             }
 
@@ -48,10 +48,14 @@ class LaravelRouteDirectoryMacroServiceProvider extends PackageServiceProvider
             collect($files)
                 ->filter(fn (SplFileInfo $file) => $file->getExtension() === 'php')
                 ->each(function (SplFileInfo $fileInfo) use ($middleware, $prefix, $name) {
-                    Route::middleware($middleware)
-                        ->prefix($prefix)
-                        ->name($name)
-                        ->group($fileInfo->getRealPath());
+                    $route = Route::middleware($middleware)
+                        ->prefix($prefix);
+
+                    if ($name !== false) {
+                        $route->name($name);
+                    }
+
+                    $route->group($fileInfo->getRealPath());
                 });
         });
     }
